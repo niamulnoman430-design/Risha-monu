@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f7e5ed">
+<title>Risha Monu — Make a Letter</title>
+<style>
+:root{--pink:#f3bfd2;--ink:#393247;--paper:#fffdf8;--bg:#f8e9ef}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Georgia,serif}
+header{padding:24px 16px;text-align:center;background:#f3dce6;border-bottom:1px solid #e6c6d4}
+header h1{margin:0;font-size:32px;letter-spacing:1px}
+header p{margin:7px 0 0;font-style:italic}
+main{max-width:850px;margin:20px auto;padding:0 13px 40px}
+.panel{background:#fff;border:1px solid #ead5de;border-radius:18px;padding:17px;margin-bottom:16px;box-shadow:0 5px 18px #6d455010}
+h2{font-size:19px;margin:0 0 13px}
+label{display:block;font:600 13px Arial,sans-serif;margin:12px 0 6px}
+input,textarea,select{width:100%;border:1px solid #dfcbd4;border-radius:10px;padding:12px;font:16px Arial,sans-serif;background:#fffdfd;color:#30283a}
+textarea{min-height:180px;resize:vertical;line-height:1.6}
+button{border:0;border-radius:999px;padding:12px 17px;background:#e9a9c2;color:#38283a;font-weight:700;font-size:14px;cursor:pointer;margin:5px 5px 0 0}
+button.secondary{background:#f4e7ed}
+button.dark{background:#44364d;color:white}
+button:active{transform:scale(.98)}
+.hint{font:13px Arial,sans-serif;color:#766b78;line-height:1.5}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>*{flex:1;min-width:130px}
+.photo-card{display:grid;grid-template-columns:100px 1fr;gap:12px;padding:12px;border:1px solid #ead5de;border-radius:13px;margin:10px 0}
+.photo-card img{width:100px;height:120px;object-fit:cover;border-radius:8px;background:#f5e9ee}
+.photo-card textarea{min-height:65px}
+.preview{background:var(--paper);border:2px solid #40374d;border-radius:5px;padding:25px 20px;min-height:250px;box-shadow:5px 5px 0 #d9c5cf}
+.preview h2{font:italic 27px Georgia,serif;margin-bottom:25px}
+.preview .lettertext{white-space:pre-wrap;line-height:1.9;font-size:19px}
+.preview .photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:22px 0}
+.preview figure{margin:0;border:2px solid #40374d;padding:7px;background:#fff}
+.preview figure img{width:100%;height:190px;object-fit:cover}
+.preview figcaption{text-align:center;font-size:14px;padding:8px 3px;line-height:1.4}
+.preview .sign{margin-top:28px;white-space:pre-wrap;line-height:1.8}
+.hidden{display:none}
+@media(max-width:480px){.preview{padding:18px 14px}.preview .photos{gap:8px}.preview figure img{height:145px}.photo-card{grid-template-columns:82px 1fr}.photo-card img{width:82px;height:105px}}
+@media print{body{background:white}.no-print,header,.panel{display:none!important}main{margin:0;padding:0}.preview{border:0;box-shadow:none;padding:20px}.preview .lettertext{font-size:17px}}
+
+#editor p{margin:0 0 16px}
+/* Polaroid-style photo cards, inspired by the user's reference screenshots */
+.inline-letter-photo{
+  position:relative;display:block;vertical-align:top;box-sizing:border-box;
+  width:170px;max-width:calc(100% - 12px);margin:22px auto 20px 0;padding:9px 9px 5px;
+  background:#fff;border:2px solid #40374d;box-shadow:3px 4px 0 #d8c5cf;
+  text-align:center;break-inside:avoid;clear:both;
+}
+.inline-letter-photo.align-left{margin-left:0;margin-right:auto}
+.inline-letter-photo.align-right{margin-left:auto;margin-right:0}
+.inline-letter-photo.align-center{margin-left:auto;margin-right:auto}
+.inline-letter-photo img{
+  display:block;width:100%;height:auto;max-height:300px;object-fit:cover;
+  border:1px solid #40374d;padding:2px;background:#fff;
+  -webkit-user-drag:none;user-select:none;pointer-events:none;
+}
+.inline-letter-photo .tape{
+  position:absolute;z-index:2;top:-11px;left:50%;transform:translateX(-50%) rotate(-3deg);
+  width:68px;height:20px;background:#ffffffb8;border:1px solid #b8adb4;
+  box-shadow:0 1px 2px #0002;pointer-events:none;
+}
+.photo-caption{
+  min-height:30px;padding:8px 3px 5px;text-align:center;
+  font:italic 14px/1.35 Georgia,serif;color:#514458;outline:none;
+  overflow-wrap:anywhere;
+}
+.photo-caption:empty:before{content:attr(data-placeholder);color:#a99aa4}
+.photo-tools{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin:0 0 5px}
+.photo-tools button{font: bold 11px Arial,sans-serif;padding:5px 8px;margin:0;border:1px solid #d8c3ce;background:#fff4f8}
+.photo-tools .move-handle{touch-action:none;cursor:grab;background:#f5dce7;min-width:66px;min-height:34px;font-size:12px;user-select:none;-webkit-user-select:none}.photo-tools .move-handle.is-moving{background:#e9a9c2;cursor:grabbing}
+.photo-resize{
+  position:absolute;right:-9px;bottom:-9px;width:27px;height:27px;border-radius:50%;
+  border:2px solid #40374d;background:#fff;display:grid;place-items:center;
+  font:16px Arial,sans-serif;touch-action:none;cursor:nwse-resize;z-index:4;
+}
+.inline-letter-photo.dragging{opacity:.55;outline:2px dashed #c77f9f}
+.inline-letter-photo .drag-placeholder{height:10px;background:#e9a9c2;border-radius:8px;margin:8px 0}
+#editor p{min-height:1.2em}
+#previewMessage p{margin:0 0 16px}
+#previewMessage .inline-letter-photo{break-inside:avoid}
+#previewMessage .photo-tools,#previewMessage .photo-resize{display:none!important}
+@media(max-width:480px){
+ .inline-letter-photo{width:145px;margin:18px 8px 18px 2px;padding:7px 7px 4px}
+ .inline-letter-photo.align-left{margin-left:0;margin-right:auto}
+ .inline-letter-photo.align-right{margin-left:auto;margin-right:0}
+ .inline-letter-photo img{max-height:240px}
+ .photo-tools button{font-size:10px;padding:5px 6px}
+}
+
+body.home-active > header, body.home-active > main { display:none; }
+#homePage{min-height:100vh;background:#101010;color:#f5ead5;display:flex;align-items:center;justify-content:center;padding:28px 18px;font-family:Georgia,serif}
+#homePage .home-inner{width:min(760px,100%);text-align:center}
+#homePage .brand{letter-spacing:7px;color:#d5b77a;font:600 13px Arial,sans-serif;margin-bottom:38px}
+#homePage .eyebrow{letter-spacing:4px;text-transform:uppercase;color:#bca77d;font:11px Arial,sans-serif}
+#homePage h1{font-size:clamp(38px,9vw,68px);font-weight:normal;line-height:1.08;margin:16px 0;color:#f2e5c9}
+#homePage .rule{width:74px;height:1px;background:#b99a5b;margin:25px auto}
+#homePage p{color:#c9c0b1;font-size:16px;line-height:1.8;max-width:480px;margin:0 auto 30px}
+#homePage button{background:#d5b77a;color:#17130d;border-radius:3px;padding:15px 27px;letter-spacing:1.5px;font:600 12px Arial,sans-serif}
+#homePage .foot{margin-top:60px;color:#817969;font:10px Arial,sans-serif;letter-spacing:2px}
+#backHome{background:#171717;color:#e7d4aa;border:1px solid #b99a5b;margin:0 0 12px;padding:9px 14px}
+
+</style>
+</head>
+<body class="home-active">
+
+<section id="homePage">
+  <div class="home-inner">
+    <div class="brand">R I S H A &nbsp; M O N U</div>
+    <div class="eyebrow">A little space for your memories</div>
+    <h1>Letters<br>Made With Love</h1>
+    <div class="rule"></div>
+    <p>Some words deserve more than a message. Create a personal letter with photographs, little captions and memories to keep.</p>
+    <button type="button" id="goToLetter">CREATE YOUR LETTER</button>
+    <div class="foot">WORDS · PHOTOGRAPHS · MEMORIES</div>
+  </div>
+</section>
+
+<header>
+  <button type="button" id="backHome">← Home</button>
+  <h1>Risha Monu ♡</h1>
+  <p>Letters made with love</p>
+</header>
+<main>
+  <section class="panel no-print">
+    <h2>✉️ Create your letter</h2>
+    <p class="hint">Write your letter, place the cursor where you want a photo, then add a Polaroid-style photo card. Resize it, align it, or move it with the Move handle.</p>
+    <label for="recipient">Letter title / Dear...</label>
+    <input id="recipient" value="Dear Monuu, 🤍" placeholder="Dear ...">
+    <div class="row" style="margin-top:12px">
+      <button type="button" class="secondary" id="insertPhoto">＋ Insert photo at cursor</button>
+      <button type="button" class="secondary" id="insertDivider">＋ Add divider</button>
+      <button type="button" class="secondary" id="insertSpace">＋ New paragraph</button>
+    </div>
+    <input id="inlinePhotoPicker" type="file" accept="image/*" multiple class="hidden">
+    <label>Letter content</label>
+    <div class="hint">Tap in the letter to choose where a photo should go. Type captions under photos. Use − / + or drag the bottom-right corner to resize; use Left / Center / Right to position it.</div>
+    <div id="editor" contenteditable="true" aria-label="Write your letter" style="min-height:280px;border:1px solid #dfcbd4;border-radius:12px;padding:15px;background:#fffdfd;font:19px/1.8 Georgia,serif;outline-color:#d99ab5">
+      <p>Dear Monuu, 🤍</p><p>Write your first paragraph here...</p><p>With lots of love,</p>
+    </div>
+    <div class="row">
+      <div><label for="font">Letter font</label>
+        <select id="font">
+          <option value="Georgia,serif">Classic</option>
+          <option value="'Trebuchet MS',sans-serif">Simple</option>
+          <option value="cursive">Handwriting style</option>
+          <option value="Palatino Linotype,serif">Elegant</option>
+        </select>
+      </div>
+      <div><label for="paper">Paper colour</label>
+        <select id="paper">
+          <option value="#fffdf8">Warm cream</option>
+          <option value="#fff7fb">Soft pink</option>
+          <option value="#fffef0">Ivory</option>
+          <option value="#f8f5ff">Lavender</option>
+        </select>
+      </div>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="row no-print" style="align-items:center">
+      <h2 style="flex:2">♡ Letter preview</h2>
+      <button class="secondary" id="refresh">Update preview</button>
+    </div>
+    <article class="preview" id="preview">
+      <h2 id="previewTitle">Dear Monuu, 🤍</h2>
+      <div class="lettertext" id="previewMessage"></div>
+      <div class="sign" id="previewSign">With lots of love,
+Your Monuu. 🤍</div>
+    </article>
+    <div class="no-print" style="margin-top:14px">
+      <label for="signature">Your closing words</label>
+      <textarea id="signature" style="min-height:75px">With lots of love,
+Your Monuu. 🤍</textarea>
+      <button class="dark" id="print">Print / Save as PDF</button>
+      <button class="secondary" id="save">Save draft on this phone</button>
+    </div>
+  </section>
+  <p class="hint no-print">Risha Monu prototype • This is a local demo. It does not publish letters or create public sharing links yet.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let savedRange=null;
+function rememberCursor(){
+  const sel=window.getSelection();
+  if(sel && sel.rangeCount && $('editor').contains(sel.anchorNode)) savedRange=sel.getRangeAt(0).cloneRange();
+}
+$('editor').addEventListener('keyup',rememberCursor);
+$('editor').addEventListener('mouseup',rememberCursor);
+$('editor').addEventListener('touchend',()=>setTimeout(rememberCursor,50));
+$('editor').addEventListener('input',()=>{rememberCursor();updatePreview();});
+function restoreCursor(){
+  $('editor').focus();
+  const sel=window.getSelection();
+  if(savedRange){sel.removeAllRanges();sel.addRange(savedRange);}
+  else {const r=document.createRange();r.selectNodeContents($('editor'));r.collapse(false);sel.removeAllRanges();sel.addRange(r);}
+}
+function insertNodeAtCursor(node){
+  restoreCursor();
+  const sel=window.getSelection();
+  if(!sel.rangeCount){$('editor').append(node);return;}
+  const range=sel.getRangeAt(0);range.deleteContents();range.insertNode(node);
+  range.setStartAfter(node);range.collapse(true);sel.removeAllRanges();sel.addRange(range);savedRange=range.cloneRange();
+}
+$('insertPhoto').addEventListener('click',()=>{$('inlinePhotoPicker').click();});
+
+$('inlinePhotoPicker').addEventListener('change',e=>{
+  const files=[...e.target.files].filter(f=>f.type.startsWith('image/'));
+  files.forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const wrap=document.createElement('div');wrap.className='inline-letter-photo align-center';wrap.contentEditable='false';
+      const tape=document.createElement('span');tape.className='tape';
+      const img=document.createElement('img');img.src=reader.result;img.alt='Letter memory';img.draggable=false;
+      const cap=document.createElement('div');cap.className='photo-caption';cap.contentEditable='true';cap.setAttribute('data-placeholder','Write a little caption...');
+      const tools=document.createElement('div');tools.className='photo-tools';
+      const move=document.createElement('button');move.type='button';move.className='move-handle';move.textContent='↕ Move';
+      move.title='Hold and drag this handle to move the photo';
+      const smaller=document.createElement('button');smaller.type='button';smaller.textContent='−';
+      const bigger=document.createElement('button');bigger.type='button';bigger.textContent='+';
+      const left=document.createElement('button');left.type='button';left.textContent='Left';
+      const center=document.createElement('button');center.type='button';center.textContent='Center';
+      const right=document.createElement('button');right.type='button';right.textContent='Right';
+      const remove=document.createElement('button');remove.type='button';remove.textContent='×';
+      tools.append(move,smaller,bigger,left,center,right,remove);
+      const resize=document.createElement('div');resize.className='photo-resize';resize.textContent='↘';resize.title='Drag to resize';
+      wrap.append(tape,img,tools,cap,resize);
+      smaller.addEventListener('click',()=>setCardWidth(wrap,-20));
+      bigger.addEventListener('click',()=>setCardWidth(wrap,20));
+      left.addEventListener('click',()=>setCardAlign(wrap,'left'));
+      center.addEventListener('click',()=>setCardAlign(wrap,'center'));
+      right.addEventListener('click',()=>setCardAlign(wrap,'right'));
+      remove.addEventListener('click',()=>{wrap.remove();updatePreview();});
+      cap.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const p=document.createElement('p');p.innerHTML='<br>';wrap.after(p);const r=document.createRange();r.setStart(p,0);r.collapse(true);const s=window.getSelection();s.removeAllRanges();s.addRange(r);savedRange=r.cloneRange();}});
+      insertNodeAtCursor(wrap);
+      const p=document.createElement('p');p.innerHTML='<br>';wrap.after(p);
+      const r=document.createRange();r.setStart(p,0);r.collapse(true);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);savedRange=r.cloneRange();
+      updatePreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+});
+function setCardWidth(card,delta){
+  const current=card.getBoundingClientRect().width;
+  const editorWidth=$('editor').clientWidth;
+  card.style.width=Math.max(105,Math.min(editorWidth-12,current+delta))+'px';
+  updatePreview();
+}
+function setCardAlign(card,align){
+  card.classList.remove('align-left','align-right','align-center');
+  card.classList.add('align-'+align);updatePreview();
+}
+$('insertDivider').addEventListener('click',()=>{const hr=document.createElement('hr');hr.style.cssText='border:0;border-top:1px solid #d9b9c8;margin:22px 0';insertNodeAtCursor(hr);updatePreview();});
+$('insertSpace').addEventListener('click',()=>{const p=document.createElement('p');p.innerHTML='<br>';insertNodeAtCursor(p);updatePreview();});
+
+
+
+// Move photos using the dedicated handle. Pointer events work for both touch and mouse.
+let activePhoto=null, dragPlaceholder=null, draggingPhoto=false, resizeState=null, dragPointerId=null;
+function findPhoto(node){return node && node.closest ? node.closest('.inline-letter-photo') : null;}
+function directEditorChild(node){
+  const editor=$('editor');
+  while(node && node.parentElement!==editor) node=node.parentElement;
+  return node && node.parentElement===editor ? node : null;
+}
+function placePlaceholderAt(x,y){
+  if(!draggingPhoto || !dragPlaceholder)return;
+  const editor=$('editor'), rect=editor.getBoundingClientRect();
+  if(x<rect.left || x>rect.right || y<rect.top || y>rect.bottom)return;
+  let target=directEditorChild(document.elementFromPoint(x,y));
+  if(target===activePhoto || target===dragPlaceholder) return;
+  if(target){
+    const r=target.getBoundingClientRect();
+    editor.insertBefore(dragPlaceholder, y < r.top+r.height/2 ? target : target.nextSibling);
+    return;
+  }
+  // Empty editor space: place relative to the closest block by vertical position.
+  const children=[...editor.children].filter(n=>n!==activePhoto && n!==dragPlaceholder);
+  if(!children.length){editor.appendChild(dragPlaceholder);return;}
+  let before=null;
+  for(const child of children){
+    const r=child.getBoundingClientRect();
+    if(y < r.top+r.height/2){before=child;break;}
+  }
+  editor.insertBefore(dragPlaceholder,before);
+}
+document.addEventListener('pointerdown',e=>{
+  const handle=e.target.closest && e.target.closest('.move-handle');
+  if(handle){
+    const card=findPhoto(handle);if(!card)return;
+    e.preventDefault();e.stopPropagation();
+    activePhoto=card;draggingPhoto=true;dragPointerId=e.pointerId;
+    dragPlaceholder=document.createElement('div');
+    dragPlaceholder.className='drag-placeholder';
+    dragPlaceholder.style.cssText='display:block;width:100%;height:14px;margin:10px 0;background:#e9a9c2;border:2px dashed #c77f9f;border-radius:8px;';
+    card.parentNode.insertBefore(dragPlaceholder,card.nextSibling);
+    card.classList.add('dragging');
+    handle.classList.add('is-moving');
+    try{handle.setPointerCapture(e.pointerId);}catch(_){}
+    placePlaceholderAt(e.clientX,e.clientY);
+    return;
+  }
+  const corner=e.target.closest && e.target.closest('.photo-resize');
+  if(corner){
+    const card=findPhoto(corner);if(!card)return;
+    e.preventDefault();e.stopPropagation();
+    resizeState={card,startX:e.clientX,startWidth:card.getBoundingClientRect().width};
+    try{corner.setPointerCapture(e.pointerId);}catch(_){}
+  }
+},true);
+document.addEventListener('pointermove',e=>{
+  if(draggingPhoto && (dragPointerId===null || e.pointerId===dragPointerId)){
+    e.preventDefault();placePlaceholderAt(e.clientX,e.clientY);
+  }
+  if(resizeState){
+    e.preventDefault();
+    const editorWidth=$('editor').clientWidth;
+    const w=Math.max(105,Math.min(editorWidth-12,resizeState.startWidth+e.clientX-resizeState.startX));
+    resizeState.card.style.width=w+'px';
+  }
+},{passive:false});
+function finishPointerAction(e){
+  if(draggingPhoto && (dragPointerId===null || !e || e.pointerId===dragPointerId)){
+    if(activePhoto && dragPlaceholder && dragPlaceholder.parentNode){
+      dragPlaceholder.parentNode.insertBefore(activePhoto,dragPlaceholder);
+      dragPlaceholder.remove();
+    }
+    if(activePhoto)activePhoto.classList.remove('dragging');
+    const h=activePhoto && activePhoto.querySelector('.move-handle');if(h)h.classList.remove('is-moving');
+    draggingPhoto=false;activePhoto=null;dragPlaceholder=null;dragPointerId=null;
+    updatePreview();
+  }
+  if(resizeState){resizeState=null;updatePreview();}
+}
+document.addEventListener('pointerup',finishPointerAction,true);
+document.addEventListener('pointercancel',finishPointerAction,true);
+document.addEventListener('contextmenu',e=>{
+  if(e.target.closest && e.target.closest('.inline-letter-photo'))e.preventDefault();
+});
+function updatePreview(){
+  $('previewTitle').textContent=$('recipient').value||'Dear ...';
+  const content=$('editor').cloneNode(true);
+  content.querySelectorAll('.photo-caption').forEach(c=>{if(c.textContent==='Write a little caption here...')c.textContent='';});
+  $('previewMessage').innerHTML=content.innerHTML;
+  $('preview').style.background=$('paper').value;
+  $('previewMessage').style.fontFamily=$('font').value;
+  $('previewSign').textContent='';
+}
+['recipient','font','paper'].forEach(id=>$(id).addEventListener('input',updatePreview));
+$('refresh').addEventListener('click',updatePreview);
+$('print').addEventListener('click',()=>{updatePreview();window.print();});
+$('save').addEventListener('click',()=>{
+  try{localStorage.setItem('rishaMonuDraftV2',JSON.stringify({recipient:$('recipient').value,content:$('editor').innerHTML,font:$('font').value,paper:$('paper').value}));alert('Letter draft saved on this phone in this browser.');}
+  catch(e){alert('Could not save draft in this browser.');}
+});
+try{const d=JSON.parse(localStorage.getItem('rishaMonuDraftV2')||'null');if(d){$('recipient').value=d.recipient||'';$('editor').innerHTML=d.content||$('editor').innerHTML;$('font').value=d.font||'Georgia,serif';$('paper').value=d.paper||'#fffdf8';}}catch(e){}
+updatePreview();
+
+document.getElementById('goToLetter').addEventListener('click',()=>{
+  document.body.classList.remove('home-active');
+  window.scrollTo(0,0);
+});
+document.getElementById('backHome').addEventListener('click',()=>{
+  document.body.classList.add('home-active');
+  window.scrollTo(0,0);
+});
+
+</script>
+</body>
+</html>
